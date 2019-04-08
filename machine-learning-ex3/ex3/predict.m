@@ -21,22 +21,15 @@ p = zeros(size(X, 1), 1);
 %       can use max(A, [], 2) to obtain the max for each row.
 %
 
-% Input layer
-a1 = X';
+X = [ones(m, 1) X];
 
-% Hidden layer
-a1 = [ones(1, size(a1,2)) ; a1]; % Add the bias- extra row of 1's
-z2 = Theta1 * a1;
-a2 = sigmoid(z2);
+a2 = sigmoid(X*Theta1');
+a2 = [ones(m, 1) a2];
+a3 = sigmoid(a2 * Theta2');
 
-% Output layer
-a2 = [ones(1, size(a2,2)) ; a2];
-z3 = Theta2 * a2;
-a3 = sigmoid(z3);
+[a, p] = max(a3, [], 2);
 
-[val, col] = max(a3', [], 2);  % Get the maximum value from the matrix
-
-p=col;
 % =========================================================================
+
 
 end

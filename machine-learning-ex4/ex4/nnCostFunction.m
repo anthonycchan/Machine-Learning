@@ -39,50 +39,6 @@ Theta2_grad = zeros(size(Theta2));
 %         cost function computation is correct by verifying the cost
 %         computed in ex4.m
 %
-
-% Input layer
-a1 = X';
-
-% Hidden layer
-a1 = [ones(1, size(a1,2)) ; a1]; % Add the bias- extra row of 1's
-z2 = Theta1 * a1;
-a2 = sigmoid(z2);
-
-% Output layer
-a2 = [ones(1, size(a2,2)) ; a2];
-z3 = Theta2 * a2;
-a3 = sigmoid(z3);
-
-% Cost computation
-
-% --compute cost function J without regularization term--
-
-for i = 1:num_labels
-  yNew = (y == i);
-  pNew = a3(i,:)';
-  hypothesis = pNew;
-  
-  term1 = (-yNew' * log(hypothesis));
-  term2 = (1-yNew)';
-  term3 = log(1-hypothesis);
-
-  J = J + ( (1 / m) .* ( term1 - (term2 * term3) ) );
-end
-
-  % Remove the bias (1's element)
-  Theta1Orig = Theta1(:, 2:end);
-  Theta2Orig = Theta2(:, 2:end);
-  
-  % Vectorize the matrices
-  Theta1Vec = Theta1Orig(:);
-  Theta2Vec = Theta2Orig(:);
-  
-  squared1 = Theta1Vec .^2;
-  squared2 = Theta2Vec .^2;
-
-  regularization = (lambda / (2 * m) ) * (sum(squared1) + sum(squared2));
-  J = J + regularization;
-  
 % Part 2: Implement the backpropagation algorithm to compute the gradients
 %         Theta1_grad and Theta2_grad. You should return the partial derivatives of
 %         the cost function with respect to Theta1 and Theta2 in Theta1_grad and
@@ -98,45 +54,6 @@ end
 %               over the training examples if you are implementing it for the 
 %               first time.
 %
-
-D1=0;
-D2=0;
-
-for t = 1 : m
-
-  % FORWARD PROPAGATION
-  a = X(t, :); % 1 x 400
-  
-  % Input layer
-  a1 = a'; % 400 x 1  
-
-  % Hidden layer
-  a1 = [ones(1, size(a1,2)) ; a1]; % Add the bias- extra row of 1's
-  z2 = Theta1 * a1;
-  a2 = sigmoid(z2);
-  
-  % Output layer
-  a2 = [ones(1, size(a2,2)) ; a2];
-  z3 = Theta2 * a2;
-  a3 = sigmoid(z3);
-
-  % BACKWARD PROPAGATION
-  yElem = y(t);  % 1x1 convert to 10x1
-  yMat = zeros(num_labels,1);
-  yMat(yElem) = 1;
-  d3 = a3 - yMat;
-
-  % +1 Bias must be removed for Theta2
-  a2Grad = sigmoidGradient(z2);
-  d2 = (Theta2Orig' * d3 ) .* a2Grad;  % 25x1
-
-  D2 = D2 + d3 * a2';  % 10x26
-  D1 = D1 + d2 * a1';  % 25x401
- 
-end
-Theta1_grad = (1/m) * D1;
-Theta2_grad = (1/m) * D2;
-
 % Part 3: Implement regularization with the cost function and gradients.
 %
 %         Hint: You can implement this around the code for
@@ -145,10 +62,64 @@ Theta2_grad = (1/m) * D2;
 %               and Theta2_grad from Part 2.
 %
 
-Theta1_grad(:, 2:end) += ((lambda / m) * Theta1Orig);
-Theta2_grad(:, 2:end) += ((lambda / m) * Theta2Orig);
+X = [ones(size(X,1),1), X];
+
+a1 = X;
+z2 = X * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(size(a2,1),1) a2];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
+
+for i = 1:num_labels
+  y1 = y==i;  % 5000 x 1 (logistic regression only supports 0 or 1 value)
+  h = a3(:,i); % 5000 x 1 (Only select the column that corresponds to the output label)
+  
+  term1 = -y1' * log(h);
+  term2 = (1.-y1)' * log(1 .- h);
+  term3 = sum(term1 - term2);
+
+  J = J + ((1/m) * term3);
+end
+
+% Cost Regulatization
+RegTheta1 = Theta1(:, 2:end);
+RegTheta2 = Theta2(:, 2:end);
+RegValue = ( lambda/(2*m) ) * (sum(sum(RegTheta1.^2)) + sum(sum(RegTheta2.^2)));
+
+J = J + RegValue;
 
 % -------------------------------------------------------------
+D1 = 0;
+D2 = 0;
+
+y_t = [1:num_labels];
+y_t(1:end) = 0;
+
+for t = 1 : m
+  % Feedforward algorithm
+  a1 = X(t, :);
+  z2 = a1 * Theta1';
+  a2 = sigmoid(z2);
+  a2_bias = [1 , a2];
+  z3 = a2_bias * Theta2';
+  a3 = sigmoid(z3);  
+  
+  y_t(1:end) = 0;
+  y_t(1, y(t)) = 1;
+  
+  delta3 = a3 .- y_t;
+  delta2 = (delta3 * RegTheta2) .* sigmoidGradient(z2);
+  
+  D1 = D1 + delta2' * a1; %25 x 401
+  D2 = D2 + delta3' * a2_bias; %10 x 26
+end
+
+Theta1_grad = (1/m) * D1;
+Theta2_grad = (1/m) * D2;
+
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + (lambda/m) * RegTheta1;
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + (lambda/m) * RegTheta2;
 
 % =========================================================================
 

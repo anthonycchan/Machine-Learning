@@ -29,12 +29,10 @@ X = [ones(m, 1) X];
 %       are in rows, then, you can use max(A, [], 2) to obtain the max 
 %       for each row.
 %       
-   
-hypothesis = sigmoid(X * all_theta');
 
-[val, col] = max(hypothesis, [], 2);
+result = sigmoid(X * all_theta');
+[a, p] = max(result, [], 2);
 
-p=col;
 % =========================================================================
 
 

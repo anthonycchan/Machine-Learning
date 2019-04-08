@@ -36,42 +36,17 @@ grad = zeros(size(theta));
 %           grad = grad + YOUR_CODE_HERE (using the temp variable)
 %
 
-
-
-% Cost
-hypothesis = sigmoid(X * theta);
-
-term1 = (-y' * log(hypothesis));
-term2 = (1-y)';
-term3 = log(1-hypothesis);
-
-
-squared= theta(2:length(theta)) .^ 2;
-regularization = (lambda / (2 * m) ) * sum(squared);
-
-J = ( (1 / m) .* ( term1 - (term2 * term3) ) ) + regularization;
-
-% Gradient (grad contains all thetas)
-regularization = (lambda / m) * theta;
-grad = ( (1 / m) * ( X' * (hypothesis - y) ) ) + regularization;
-
-% Get none regularized theta 1
-term4= (hypothesis - y);
-term5 = X';
-term5 = term5(1,:);
-
-theta1 = 1 / m * ( term5 * term4 );
-
-grad(1) = theta1;
-
-
-
-
-
-
+h= sigmoid(X*theta);
+term1 = (-1 .* y)' * log(h);
+term2 = (1 - y)' * log(1 - h);
+J = 1/m .* (term1 - term2) + ( (lambda / (2*m)) * sum(theta(2:end).^2));
 
 % =============================================================
 
 grad = grad(:);
+
+thetaTemp = theta;
+thetaTemp(1) = 0;
+grad = (1/m) .* ( (h .- y)' * X)' + (lambda/m) .* thetaTemp;
 
 end
