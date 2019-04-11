@@ -19,27 +19,14 @@ grad = zeros(size(theta));
 %               You should set J to the cost and grad to the gradient.
 %
 
-hypothesis = X * theta;
-squaredError = (hypothesis - y) .^2;
+h = X * theta;
+J = (1/(2*m)) * sum( (h-y) .^ 2);
+J = J + ((lambda/(2*m)) * sum(theta(2:end) .^ 2));
 
-noBiasTheta = theta(2:end, :);
-regularization = ((lambda/(2*m)) * (sum(noBiasTheta .^ 2)));
-
-J = (1/(2*m) * sum(squaredError) ) + regularization;
+grad = (1/m) * (X' * (h - y));
+grad(2:end) = grad(2:end) + (lambda/m) .* theta(2:end);
 
 % =========================================================================
-% Gradient (grad contains all thetas)
-regularization = (lambda / m) * theta;
-grad = ( (1 / m) * ( X' * (hypothesis - y) ) ) + regularization;
-
-% Get none regularized theta 1
-term4= (hypothesis - y);
-term5 = X';
-term5 = term5(1,:);
-
-theta1 = 1 / m * ( term5 * term4 );
-
-grad(1) = theta1;
 
 grad = grad(:);
 

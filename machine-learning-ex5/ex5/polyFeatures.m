@@ -15,9 +15,13 @@ X_poly = zeros(numel(X), p);
 %
 % 
 
+[numRows numCols] = size(X);
+newCols = zeros(numRows, p-1);
+X_poly = [X newCols];
 
-
-
+for i = 2:p
+  X_poly(:, i) = X(:,1) .^ i;  
+end
 
 
 % =========================================================================
